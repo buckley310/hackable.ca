@@ -5,6 +5,7 @@ html {
 
 body {
     margin: 0 0 50px 0;
+    font-family: “Helvetica Neue”, Helvetica, Arial, sans-serif;
 }
 
 footer {
@@ -119,4 +120,21 @@ header a {
     width: auto;
     text-align: left;
     padding: 10px;
+}
+
+.modalBG {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(200, 200, 200, 0.75);
+}
+
+.modalBox {
+    background-color: white;
+    padding: 1em;
 }
