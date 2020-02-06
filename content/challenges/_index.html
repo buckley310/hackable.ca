@@ -7,7 +7,19 @@ title: Challenges
 <div id="challenges"></div>
 <script>
      function challengeDetails(chal) {
-          alert(JSON.stringify(chal));
+          let mod = document.createElement('div');
+          mod.classList.add('modalBG');
+          mod.addEventListener('click', function (e) {
+               if (e.target === this)
+                    document.body.removeChild(this);
+          });
+          mod.innerHTML = `<div class="modalBox">
+                               <h3>${chal.title}</h3>
+                               ${chal.text}<br>
+                               <b>Points</b>: ${chal.points}<br>
+                               <b>Solves</b>: ${chal.solves}<br>
+                           </div>`;
+          document.body.appendChild(mod);
      }
      function contentInit() {
           api('challenges').then(function (j) {
