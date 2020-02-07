@@ -48,11 +48,13 @@
                     document.body.removeChild(this);
           });
           mod.innerHTML = `<div class="modalBox">
-                               <div class="modalClose">&#10060;</div>
-                               <h3>${chal.title}</h3>
-                               ${chal.text}<br><br>
-                               <b>Points</b>: ${chal.points}<br>
-                               <b>Solves</b>: ${chal.solves}<br>
+                              <div class="modalClose">&#10060;</div>
+                              <div style="margin:10px">
+                                   <h3>${chal.title}</h3>
+                                   ${chal.text}<br><br>
+                                   <b>Points</b>: ${chal.points}<br>
+                                   <b>Solves</b>: ${chal.solves}<br>
+                              </div>
                            </div>`;
           document.body.appendChild(mod);
      }
