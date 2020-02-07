@@ -44,12 +44,13 @@
           let mod = document.createElement('div');
           mod.classList.add('modalBG');
           mod.addEventListener('click', function (e) {
-               if (e.target === this)
+               if (e.target === this || e.target.classList.contains('modalClose'))
                     document.body.removeChild(this);
           });
           mod.innerHTML = `<div class="modalBox">
+                               <div class="modalClose">&#10060;</div>
                                <h3>${chal.title}</h3>
-                               ${chal.text}<br>
+                               ${chal.text}<br><br>
                                <b>Points</b>: ${chal.points}<br>
                                <b>Solves</b>: ${chal.solves}<br>
                            </div>`;

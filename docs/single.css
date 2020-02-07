@@ -132,9 +132,21 @@ header a {
     bottom: 0;
     right: 0;
     background-color: rgba(200, 200, 200, 0.75);
+    cursor: pointer;
 }
 
 .modalBox {
     background-color: white;
     padding: 1em;
+    cursor: initial;
+    white-space: nowrap;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: scroll;
+}
+
+.modalClose {
+    float: right;
+    cursor: pointer;
+    line-height: .5em;
 }
