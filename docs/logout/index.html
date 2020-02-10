@@ -43,7 +43,6 @@
         api('logout').then(function (j) {
             if (j.ok) {
                 localStorage.removeItem('sessionToken');
-                sessionStorage.removeItem('sessionToken');
                 location.assign('/');
             } else {
                 console.log(j);

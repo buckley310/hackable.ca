@@ -20,8 +20,7 @@ function unhideElements(elems) {
 
 window.addEventListener('load', function () {
 
-    if (!(localStorage.getItem('sessionToken') ||
-        sessionStorage.getItem('sessionToken'))) {
+    if (!localStorage.getItem('sessionToken')) {
 
         unhideElements(['tab_login', 'tab_register']);
         if (window['contentInit']) contentInit();

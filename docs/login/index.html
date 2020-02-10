@@ -49,10 +49,6 @@
             <th class="loginInput"> <input id="password" type="password" required> </th>
         </tr>
         <tr>
-            <th class="loginLabel">Remember Me</th>
-            <th class="loginInput"> <input id="rememberMe" type="checkbox" checked> </th>
-        </tr>
-        <tr>
             <th></th>
             <th class="loginInput"> <input type="submit" value="Login"> </th>
         </tr>
@@ -69,8 +65,7 @@
             if (!j.ok)
                 return document.getElementById('errorText').textContent = "Incorrect";
 
-            (document.getElementById('rememberMe').checked ? localStorage : sessionStorage)
-                .setItem('sessionToken', j.sessionToken);
+            localStorage.setItem('sessionToken', j.sessionToken);
 
             window.location.assign('/');
         });
