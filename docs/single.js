@@ -5,9 +5,11 @@ function loadingError(e) {
 }
 
 function api(path, args = false) {
-    // lol api
-    let apiURL = '/api/';
-    return ((args && false) ? // remove "&&false" later
+    if (!localStorage.getItem('apiEndpoint'))
+        return fetch('/api/' + path, { cache: "no-cache" }).then(x => x.json());
+
+    let apiURL = localStorage.getItem('apiEndpoint');
+    return (args ?
         fetch(apiURL + path, { cache: "no-cache", method: 'POST', body: JSON.stringify(args) }) :
         fetch(apiURL + path, { cache: "no-cache" })
     ).then(x => x.json());
