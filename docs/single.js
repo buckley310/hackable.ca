@@ -29,7 +29,7 @@ window.addEventListener('load', function () {
         return;
     }
 
-    api('/userinfo').then(function (x) {
+    api('userinfo').then(function (x) {
         userinfo = x;
 
         unhideElements(userinfo.username ?
