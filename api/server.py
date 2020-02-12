@@ -1,88 +1,86 @@
 #!/usr/bin/env python3
 
+from pymongo import MongoClient
 from itertools import groupby
 from time import time
 from secrets import token_hex
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+
 app = Flask(__name__)
 CORS(app)
+db = MongoClient('mongodb://127.0.0.1:27017')['hca']
 
 
-def all_challenges():
-    return [{"category": "web",
-             "title": "kiss",
-             "points": 1,
-             "solves": 999,
-             "solved": False,
-             "text": "find the flag"},
-
-            {"category": "pwn",
-             "title": "very verbose",
-             "points": 0,
-             "solves": 123,
-             "solved": False,
-             "text": "this is a test of a challenge with a really long description vvvvvvvvvvvvvvvvvvvvvvv<br>and manual line-breaks :)"},
-
-            {"category": "web",
-             "title": "user agent",
-             "points": 4,
-             "solves": 888,
-             "solved": True,
-             "text": "change the user-agent"},
-
-            {"category": "pwn",
-             "title": "too tall",
-             "points": 0,
-             "solves": 123,
-             "solved": False,
-             "text": "this<br>challenge<br>description<br>has<br>way<br>way<br>way<br>way<br>way<br>way<br>way<br>too<br>many<br>line<br>breaks"},
-
-            {"category": "pwn",
-             "title": "this has a long name",
-             "points": 0,
-             "solves": 123,
-             "solved": False,
-             "text": "abcd"}, ]
+def get_session_username():
+    if 'X-Sesid' in request.headers:
+        r = db['sessions'].find_one({'sesid': request.headers['X-Sesid']})
+        if r:
+            return r['username']
+    return None
 
 
-def without(unwanted):
-    def fsub(x):
-        x.pop(unwanted)
-        return x
-    return fsub
-
-
-def all_challenges_grouped():
-    return [
-        {
-            'title': category,
-            'chals': list(map(without('category'), chals))
-        }
-        for category, chals
-        in groupby(
-            sorted(all_challenges(), key=lambda x: x['category']),
-            key=lambda x: x['category']
+def all_challenges(username):
+    def solve_count(chal):
+        chal['solves'] = db['solves'].count_documents(
+            {'challenge': chal['title']}
         )
+        return chal
+
+    def user_solved(chal):
+        chal['solved'] = bool(
+            db['solves'].find_one({'username': username,
+                                   'challenge': chal['title']
+                                   }))
+        return chal
+
+    return map(user_solved,
+               map(solve_count,
+                   db['challenges'].find({}, {'_id': 0,
+                                              'text': 1,
+                                              'title': 1,
+                                              'points': 1,
+                                              'category': 1, })))
+
+
+def all_challenges_grouped(username):
+    def getCat(x):
+        return x['category']
+
+    def removeCat(x):
+        del x['category']
+        return x
+
+    return [
+        {'title': category, 'chals': list(map(removeCat, chals))}
+        for category, chals
+        in groupby(sorted(all_challenges(username), key=getCat), key=getCat)
     ]
 
 
 @app.route("/login", methods=['POST'])
 def login():
-    return jsonify({"ok": True, "sessionToken": token_hex()})
+    args = request.get_json(force=True)
+    if not db['users'].find_one({'username': args['username']}):
+        return jsonify(False)
+    t = token_hex()
+    db['sessions'].insert_one({'username': args['username'], 'sesid': t})
+    return jsonify({"sesid": t})
 
 
 @app.route("/logout")
 def logout():
-    return jsonify({"ok": True})
+    return jsonify({'ok': True})
 
 
 @app.route("/userinfo")
 def userinfo():
-    return jsonify({"ok": True,
-                    "username": "buckley310",
-                    "email": "a@y.z",
-                    "score": 307})
+    username = get_session_username()
+    if not username:
+        return jsonify(False)
+    return jsonify({"username": username,
+                    "email": "user@example.org",
+                    "score": 1337})
 
 
 @app.route("/scoreboard")
@@ -103,7 +101,7 @@ def scoreboard():
 
 @app.route("/challenges")
 def challenges():
-    return jsonify(all_challenges_grouped())
+    return jsonify(all_challenges_grouped(get_session_username()))
 
 
 if __name__ == '__main__':
