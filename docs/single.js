@@ -5,14 +5,13 @@ function loadingError(e) {
 }
 
 function api(path, args = false) {
-    if (!localStorage.getItem('apiEndpoint'))
-        return fetch('/api/' + path, { cache: "no-cache" }).then(x => x.json());
-
-    let apiURL = localStorage.getItem('apiEndpoint');
-    return (args ?
-        fetch(apiURL + path, { cache: "no-cache", method: 'POST', body: JSON.stringify(args) }) :
-        fetch(apiURL + path, { cache: "no-cache" })
-    ).then(x => x.json());
+    let st = localStorage.getItem('sessionToken');
+    return fetch('http://127.0.0.1:5000/' + path, {
+        cache: "no-cache",
+        method: args ? 'POST' : 'GET',
+        body: args ? JSON.stringify(args) : null,
+        headers: st ? { 'X-Sesid': st } : {}
+    }).then(x => x.json());
 }
 
 function unhideElements(elems) {
