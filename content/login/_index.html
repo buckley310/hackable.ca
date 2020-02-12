@@ -8,7 +8,7 @@ title: Login
     <table>
         <tr>
             <th class="loginLabel">E-Mail Address:</th>
-            <th class="loginInput"> <input id="email" type="email" required autofocus> </th>
+            <th class="loginInput"> <input id="username" type="text" required autofocus> </th>
         </tr>
         <tr>
             <th class="loginLabel">Password:</th>
@@ -24,14 +24,14 @@ title: Login
     function doLogin() {
         api('login',
             {
-                username: document.getElementById('email').value,
-                username: document.getElementById('password').value
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
             }
         ).then(function (j) {
-            if (!j.ok)
+            if (!j.sesid)
                 return document.getElementById('errorText').textContent = "Incorrect";
 
-            localStorage.setItem('sessionToken', j.sessionToken);
+            localStorage.setItem('sessionToken', j.sesid);
 
             window.location.assign('/');
         });
