@@ -14,11 +14,9 @@ title: Challenges
      function submitFlag() {
           api('submitflag', { flag: document.getElementById('flag').value })
                .then(function (j) {
+                    alert(j.msg);
                     if (j.ok)
-                         alert('Nice job!');
-                    else
-                         alert("Sorry, I don't recognize that.");
-                    location.reload();
+                         location.reload();
                }).catch(loadingError);
      }
      function challengeDetails(chal) {
