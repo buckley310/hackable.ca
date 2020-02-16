@@ -21,11 +21,6 @@ db['challenges'].insert_many([
      "text": "abcd"},
 ])
 
-db['solves'].insert_many([
-    {'username': 'buckley310', 'challenge': 'too tall'},
-    {'username': 'buckley310', 'challenge': 'kiss'},
-])
-
 db['users'].insert_many([
-    {"username": "buckley310", "email": "a@y.z", "score": 307},
+    {"username": "buckley310", "email": "a@y.z"},
 ])

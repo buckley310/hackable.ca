@@ -21,21 +21,20 @@ def get_session_username():
 
 
 def all_challenges(username):
-    def solve_count(chal):
+    def challengeSolveCount(chal):
         chal['solves'] = db['solves'].count_documents(
             {'challenge': chal['title']}
         )
         return chal
 
-    def user_solved(chal):
+    def checkIfUserSolved(chal):
         chal['solved'] = bool(
             db['solves'].find_one({'username': username,
-                                   'challenge': chal['title']
-                                   }))
+                                   'challenge': chal['title'], }))
         return chal
 
-    return map(user_solved,
-               map(solve_count,
+    return map(checkIfUserSolved,
+               map(challengeSolveCount,
                    db['challenges'].find({}, {'_id': 0,
                                               'text': 1,
                                               'title': 1,
@@ -56,6 +55,13 @@ def all_challenges_grouped(username):
         for category, chals
         in groupby(sorted(all_challenges(username), key=getCat), key=getCat)
     ]
+
+
+def getUserScore(username):
+    return sum([
+        db['challenges'].find_one({'title': x['challenge']})['points']
+        for x in db['solves'].find({'username': username})
+    ])
 
 
 @app.route("/login", methods=['POST'])
@@ -80,8 +86,8 @@ def userinfo():
         return jsonify(False)
     u = db['users'].find_one({'username': username}, {'_id': 0,
                                                       'email': 1,
-                                                      'score': 1,
                                                       'username': 1, })
+    u['score'] = getUserScore(u['username'])
     return jsonify(u) if u else jsonify(False)
 
 
@@ -104,16 +110,8 @@ def submitflag():
 @app.route("/scoreboard")
 def scoreboard():
     return jsonify([
-        ["21",  "buckley310",      "307"],
-        ["593", "GabrieleDuchi",   "307"],
-        ["32",  "Xio",             "277"],
-        ["45",  "veganjay",        "277"],
-        ["67",  "dodo",            "277"],
-        ["47",  "hueh",            "269"],
-        ["237", "FeDEX",           "233"],
-        ["138", "viki",            "232"],
-        ["254", "quicksilver0x01", "217"],
-        ["139", "c_u_r_l_y",       "192"]
+        [u['username'], getUserScore(u['username'])]
+        for u in db['users'].find()
     ])
 
 
