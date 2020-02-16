@@ -22,5 +22,6 @@ db['challenges'].insert_many([
 ])
 
 db['users'].insert_many([
-    {"username": "buckley310", "email": "a@y.z"},
+    {"username": "user1", "email": "user1@example.org", "lastSolveTime": 0},
+    {"username": "user2", "email": "user2@example.org", "lastSolveTime": 0},
 ])

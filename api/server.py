@@ -107,14 +107,24 @@ def submitflag():
 
     db['solves'].insert_one(entry)
 
+    db['users'].update_one({'username': username},
+                           {"$set": {"lastSolveTime": int(time())}})
+
     return jsonify({'ok': True, 'msg': 'Nice job!'})
 
 
 @app.route("/scoreboard")
 def scoreboard():
     return jsonify([
-        [u['username'], getUserScore(u['username'])]
-        for u in db['users'].find()
+        [x[2], x[0]] for x in
+        sorted([
+            [
+                getUserScore(u['username']),
+                0-u['lastSolveTime'],
+                u['username'],
+            ]
+            for u in db['users'].find()
+        ], reverse=True)
     ])
 
 
