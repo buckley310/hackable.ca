@@ -38,8 +38,23 @@
 <div class="capWidth">
     
 <h1>Challenges!</h1>
+
+<form id="loginForm" style="display:none" action="javascript:void(0);">
+     <input id="flag" type="text" placeholder="flag{}">
+     <input type="submit" value="Submit">
+</form>
 <div id="challenges"></div>
 <script>
+     function submitFlag() {
+          api('submitflag', { flag: document.getElementById('flag').value })
+               .then(function (j) {
+                    if (j.ok)
+                         alert('Nice job!');
+                    else
+                         alert("Sorry, I don't recognize that.");
+                    location.reload();
+               }).catch(loadingError);
+     }
      function challengeDetails(chal) {
           let mod = document.createElement('div');
           mod.classList.add('modalBG');
@@ -82,6 +97,10 @@
 
                }
           }).catch(loadingError);
+          if (userinfo) {
+               document.getElementById('loginForm').addEventListener('submit', submitFlag);
+               document.getElementById('loginForm').style.display = '';
+          }
      }
 </script>
 </div>

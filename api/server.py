@@ -78,9 +78,27 @@ def userinfo():
     username = get_session_username()
     if not username:
         return jsonify(False)
-    return jsonify({"username": username,
-                    "email": "user@example.org",
-                    "score": 1337})
+    u = db['users'].find_one({'username': username}, {'_id': 0,
+                                                      'email': 1,
+                                                      'score': 1,
+                                                      'username': 1, })
+    return jsonify(u) if u else jsonify(False)
+
+
+@app.route("/submitflag", methods=['POST'])
+def submitflag():
+    username = get_session_username()
+    args = request.get_json(force=True)
+    assert username
+    c = db.challenges.find_one({'flag': args['flag']})
+    if not c:
+        return jsonify({'ok': False})
+
+    db['solves'].replace_one({'username': username, 'challenge': c['title']},
+                             {'username': username, 'challenge': c['title']},
+                             upsert=True)
+
+    return jsonify({'ok': True})
 
 
 @app.route("/scoreboard")
