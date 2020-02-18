@@ -14,7 +14,7 @@ db = MongoClient('mongodb://127.0.0.1:27017')['hca']
 
 def get_session_username():
     if 'X-Sesid' in request.headers:
-        r = db['sessions'].find_one({'sesid': request.headers['X-Sesid']})
+        r = db.sessions.find_one({'sesid': request.headers['X-Sesid']})
         if r:
             return r['username']
     return None
@@ -22,19 +22,19 @@ def get_session_username():
 
 def all_challenges(username):
     def challengeSolveCount(chal):
-        chal['solves'] = db['solves'].count_documents(
+        chal['solves'] = db.solves.count_documents(
             {'challenge': chal['title']})
         return chal
 
     def checkIfUserSolved(chal):
         chal['solved'] = bool(
-            db['solves'].find_one({'username': username,
+            db.solves.find_one({'username': username,
                                    'challenge': chal['title'], }))
         return chal
 
     return map(checkIfUserSolved,
                map(challengeSolveCount,
-                   db['challenges'].find({}, {'_id': 0, 'flag': 0})))
+                   db.challenges.find({}, {'_id': 0, 'flag': 0})))
 
 
 def all_challenges_grouped(username):
@@ -54,18 +54,18 @@ def all_challenges_grouped(username):
 
 def getUserScore(username):
     return sum([
-        db['challenges'].find_one({'title': x['challenge']})['points']
-        for x in db['solves'].find({'username': username})
+        db.challenges.find_one({'title': x['challenge']})['points']
+        for x in db.solves.find({'username': username})
     ])
 
 
 @app.route("/login", methods=['POST'])
 def login():
     args = request.get_json(force=True)
-    if not db['users'].find_one({'username': args['username']}):
+    if not db.users.find_one({'username': args['username']}):
         return jsonify(False)
     t = token_hex()
-    db['sessions'].insert_one({'username': args['username'], 'sesid': t})
+    db.sessions.insert_one({'username': args['username'], 'sesid': t})
     return jsonify({"sesid": t})
 
 
@@ -79,7 +79,7 @@ def userinfo():
     username = get_session_username()
     if not username:
         return jsonify(False)
-    u = db['users'].find_one({'username': username}, {'_id': 0,
+    u = db.users.find_one({'username': username}, {'_id': 0,
                                                       'email': 1,
                                                       'username': 1, })
     u['score'] = getUserScore(u['username'])
@@ -97,12 +97,12 @@ def submitflag():
 
     entry = {'username': username, 'challenge': c['title']}
 
-    if db['solves'].find_one(entry):
+    if db.solves.find_one(entry):
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
-    db['solves'].insert_one(entry)
+    db.solves.insert_one(entry)
 
-    db['users'].update_one({'username': username},
+    db.users.update_one({'username': username},
                            {"$set": {"lastSolveTime": int(time())}})
 
     return jsonify({'ok': True, 'msg': 'Nice job!'})
@@ -118,7 +118,7 @@ def scoreboard():
                 0-u['lastSolveTime'],
                 u['username'],
             ]
-            for u in db['users'].find()
+            for u in db.users.find()
         ], reverse=True)
     ])
 
