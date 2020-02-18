@@ -29,7 +29,7 @@ def all_challenges(username):
     def checkIfUserSolved(chal):
         chal['solved'] = bool(
             db.solves.find_one({'username': username,
-                                   'challenge': chal['title'], }))
+                                'challenge': chal['title'], }))
         return chal
 
     return map(checkIfUserSolved,
@@ -71,7 +71,10 @@ def login():
 
 @app.route("/logout")
 def logout():
-    return jsonify({'ok': True})
+    sesid = request.headers['X-Sesid']
+    return jsonify({
+        'ok': bool(db.sessions.delete_one({'sesid': sesid}).deleted_count)
+    })
 
 
 @app.route("/userinfo")
@@ -80,8 +83,8 @@ def userinfo():
     if not username:
         return jsonify(False)
     u = db.users.find_one({'username': username}, {'_id': 0,
-                                                      'email': 1,
-                                                      'username': 1, })
+                                                   'email': 1,
+                                                   'username': 1, })
     u['score'] = getUserScore(u['username'])
     return jsonify(u) if u else jsonify(False)
 
@@ -103,7 +106,7 @@ def submitflag():
     db.solves.insert_one(entry)
 
     db.users.update_one({'username': username},
-                           {"$set": {"lastSolveTime": int(time())}})
+                        {"$set": {"lastSolveTime": int(time())}})
 
     return jsonify({'ok': True, 'msg': 'Nice job!'})
 
