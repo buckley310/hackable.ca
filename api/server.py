@@ -23,8 +23,7 @@ def get_session_username():
 def all_challenges(username):
     def challengeSolveCount(chal):
         chal['solves'] = db['solves'].count_documents(
-            {'challenge': chal['title']}
-        )
+            {'challenge': chal['title']})
         return chal
 
     def checkIfUserSolved(chal):
