@@ -34,11 +34,7 @@ def all_challenges(username):
 
     return map(checkIfUserSolved,
                map(challengeSolveCount,
-                   db['challenges'].find({}, {'_id': 0,
-                                              'text': 1,
-                                              'title': 1,
-                                              'points': 1,
-                                              'category': 1, })))
+                   db['challenges'].find({}, {'_id': 0, 'flag': 0})))
 
 
 def all_challenges_grouped(username):
