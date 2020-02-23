@@ -100,7 +100,7 @@ async def userinfo():
 async def submitflag():
     username = await get_session_username()
     assert username
-    args = request.get_json(force=True)
+    args = await request.get_json(force=True)
     c = await db.challenges.find_one({'flag': args['flag']})
     if not c:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
