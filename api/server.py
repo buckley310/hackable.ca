@@ -2,6 +2,7 @@
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from itertools import groupby
+from collections import defaultdict
 from time import time
 from secrets import token_hex
 from quart import Quart, jsonify, request
@@ -120,17 +121,15 @@ async def submitflag():
 
 @app.route("/scoreboard")
 async def scoreboard():
-    return jsonify([
-        [x[2], x[0]] for x in
-        sorted([
-            [
-                await getUserScore(u['username']),
-                0-u['lastSolveTime'],
-                u['username'],
-            ]
-            for u in await db.users.find().to_list(length=None)
-        ], reverse=True)
-    ])
+    allChals = defaultdict(lambda: 0)
+    async for x in db.challenges.find():
+        allChals[x['title']] = x['points']
+
+    board = defaultdict(lambda: 0)
+    async for s in db.solves.find():
+        board[s['username']] += allChals[s['challenge']]
+
+    return jsonify(sorted(board.items(), key=lambda x: 0-x[1])[:10])
 
 
 @app.route("/challenges")
