@@ -26,42 +26,10 @@ async def get_session_username():
     return None
 
 
-async def all_challenges(username):
-    chals = await db.challenges.find(
-        {}, {'_id': 0, 'flag': 0}
-    ).to_list(length=None)
-
-    for c in chals:
-        c['solves'] = await db.solves.count_documents(
-            {'challenge': c['title']})
-
-    for c in chals:
-        c['solved'] = bool(
-            await db.solves.find_one({'username': username,
-                                      'challenge': c['title'], }))
-    return chals
-
-
-async def all_challenges_grouped(username):
-    def getCat(x):
-        return x['category']
-
-    def removeCat(x):
-        del x['category']
-        return x
-
-    return [
-        {'title': category, 'chals': list(map(removeCat, chals))}
-        for category, chals in
-        groupby(sorted(await all_challenges(username), key=getCat), key=getCat)
-    ]
-
-
-async def getUserScore(username):
-    return sum([
-        (await db.challenges.find_one({'title': x['challenge']}))['points']
-        for x
-        in await db.solves.find({'username': username}).to_list(length=None)
+async def get_challenge_scores():
+    return defaultdict(int, [
+        (x['title'], x['points'])
+        async for x in db.challenges.find()
     ])
 
 
@@ -92,8 +60,12 @@ async def userinfo():
         return jsonify(False)
     u = await db.users.find_one({'username': username}, {'_id': 0,
                                                          'email': 1,
+                                                         'solves': 1,
                                                          'username': 1, })
-    u['score'] = await getUserScore(u['username'])
+    u['score'] = sum(map(
+        (await get_challenge_scores()).get,
+        u['solves']
+    ))
     return jsonify(u) if u else jsonify(False)
 
 
@@ -106,35 +78,45 @@ async def submitflag():
     if not c:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
 
-    entry = {'username': username, 'challenge': c['title']}
-
-    if await db.solves.find_one(entry):
+    if await db.users.find_one({'username': username, 'solves': c['title']}):
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
-    await db.solves.insert_one(entry)
-
-    await db.users.update_one({'username': username},
-                              {"$set": {"lastSolveTime": int(time())}})
+    await db.users.update_one(
+        {'username': username},
+        {
+            "$set": {"lastSolveTime": int(time())},
+            "$push": {"solves": c['title']},
+        })
 
     return jsonify({'ok': True, 'msg': 'Nice job!'})
 
 
 @app.route("/scoreboard")
 async def scoreboard():
-    allChals = defaultdict(lambda: 0)
-    async for x in db.challenges.find():
-        allChals[x['title']] = x['points']
-
+    chals = await get_challenge_scores()
     board = defaultdict(lambda: 0)
-    async for s in db.solves.find():
-        board[s['username']] += allChals[s['challenge']]
+    async for u in db.users.find():
+        board[u['username']] = sum(map(chals.get, u['solves']))
 
     return jsonify(sorted(board.items(), key=lambda x: 0-x[1])[:10])
 
 
 @app.route("/challenges")
 async def challenges():
-    return jsonify(await all_challenges_grouped(await get_session_username()))
+    username = await get_session_username()
+
+    chals = defaultdict(list)
+    async for chal in db.challenges.find({}, {'_id': 0, 'flag': 0}):
+        chal['solves'] = (
+            await db.users.count_documents({'solves': chal['title']}))
+        chal['solved'] = bool(
+            await db.users.find_one({'username': username,
+                                     'solves': chal['title'], }))
+        cat = chal['category']
+        del chal['category']
+        chals[cat].append(chal)
+
+    return jsonify([{'title': x, 'chals': chals[x]} for x in chals.keys()])
 
 
 if __name__ == '__main__':
