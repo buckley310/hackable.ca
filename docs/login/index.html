@@ -38,6 +38,7 @@
 <div class="capWidth">
     
 <h2>Login!</h2>
+<h3 id="errorText" style="color:red"></h3>
 <form id="loginForm" action="javascript:void(0);">
     <table>
         <tr>
@@ -63,12 +64,12 @@
             }
         ).then(function (j) {
             if (!j.sesid)
-                return document.getElementById('errorText').textContent = "Incorrect";
+                return document.getElementById('errorText').textContent = j.txt;
 
             localStorage.setItem('sessionToken', j.sesid);
 
             window.location.assign('/');
-        });
+        }).catch(loadingError);
     }
 
     function contentInit() {
