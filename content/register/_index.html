@@ -4,10 +4,52 @@ title: Register
 ---
 
 <h2>Register!</h2>
-
+<h3 id="errorText" style="color:red"></h3>
+<form id="registerForm" action="javascript:void(0);">
+    <table>
+        <tr>
+            <th class="loginLabel">Username:</th>
+            <th class="loginInput"> <input id="username" type="text" required autofocus> </th>
+        </tr>
+        <tr>
+            <th class="loginLabel">Password:</th>
+            <th class="loginInput"> <input id="password" type="password" required> </th>
+            <th class="loginInput"> <input id="password2" type="password" required> </th>
+        </tr>
+        <tr>
+            <th class="loginLabel">Email (optional):</th>
+            <th class="loginInput"> <input id="email" type="email"> </th>
+            <th class="loginInput"> <input id="email2" type="email"> </th>
+        </tr>
+        <tr>
+            <th></th>
+            <th class="loginInput"> <input type="submit" value="Register"> </th>
+        </tr>
+    </table>
+</form>
 <script>
+    function doRegister() {
+        let uname = document.getElementById('username').value;
+        let pwd1 = document.getElementById('password').value;
+        let pwd2 = document.getElementById('password2').value;
+        let email1 = document.getElementById('email').value;
+        let email2 = document.getElementById('email2').value;
+
+        if (pwd1 !== pwd2)
+            return document.getElementById('errorText').textContent = "Passwords don't match.";
+
+        if (email1 !== "" && email1 !== email2)
+            return document.getElementById('errorText').textContent = "Emails don't match.";
+
+        api('newaccount', { username: uname, password: pwd1 })
+            .then(function (j) {
+                if (j.ok)
+                    window.location.assign('/login/');
+            }).catch(loadingError);
+    }
+
     function contentInit() {
-        if (userinfo)
-            return window.location.assign('/');
+        document.getElementById('registerForm').addEventListener('submit', doRegister);
+        if (userinfo) return window.location.assign('/');
     }
 </script>

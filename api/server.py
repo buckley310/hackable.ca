@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import bcrypt
 from motor.motor_asyncio import AsyncIOMotorClient
 from itertools import groupby
-from collections import defaultdict
+from collections import defaultdict, deque, Counter
 from time import time
 from secrets import token_hex
 from quart import Quart, jsonify, request
@@ -10,6 +11,7 @@ from quart_cors import cors
 
 app = Quart(__name__)
 cors(app)
+rateLimit = deque(maxlen=64)
 
 
 @app.before_first_request
@@ -36,8 +38,30 @@ async def get_challenge_scores():
 @app.route("/login", methods=['POST'])
 async def login():
     args = await request.get_json(force=True)
-    if not await db.users.find_one({'username': args['username']}):
-        return jsonify(False)
+
+    # block brute force \/
+    stamp = int(time()/10)
+    rateLimit.append((stamp, args['username']))
+    rateLimit.append((stamp, request.remote_addr))
+    limitStats = Counter(rateLimit)
+    if (limitStats[(stamp, args['username'])] > 5 or
+            limitStats[(stamp, request.remote_addr)] > 5):
+        return jsonify({'txt': 'Slow down, jeez'})
+    # block brute force /\
+
+    u = await db.users.find_one({'username': args['username']})
+
+    if not u:
+        bcrypt.hashpw(b'no timing attacks', bcrypt.gensalt())
+        return jsonify({'txt': 'Incorrect'})
+
+    if not bcrypt.checkpw(args['password'].encode('utf8'),
+                          u['password'].encode('utf8')):
+        return jsonify({'txt': 'Incorrect'})
+
+    if not u['password'].startswith('$2b$12$'):
+        print('![TODO] Password for', u['username'], 'updated.')
+
     t = token_hex()
     await db.sessions.insert_one({'username': args['username'], 'sesid': t})
     return jsonify({"sesid": t})
@@ -99,6 +123,25 @@ async def scoreboard():
         board[u['username']] = sum(map(chals.get, u['solves']))
 
     return jsonify(sorted(board.items(), key=lambda x: 0-x[1])[:10])
+
+
+@app.route("/newaccount", methods=['POST'])
+async def newaccount():
+    args = await request.get_json(force=True)
+    assert isinstance(args['username'], str)
+    assert isinstance(args['password'], str)
+
+    if await db.users.find_one({'username': args['username']}):
+        return jsonify({'ok': False, 'txt': 'Username already taken'})
+
+    hashed = bcrypt.hashpw(args['password'].encode('utf8'), bcrypt.gensalt())
+
+    db.users.insert_one({
+        'username': args['username'],
+        'password': hashed.decode('utf8'),
+        'lastSolveTime': 0, 'solves': [],
+    })
+    return jsonify({'ok': True})
 
 
 @app.route("/challenges")

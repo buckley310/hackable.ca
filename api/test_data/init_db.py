@@ -20,13 +20,3 @@ db['challenges'].insert_many([
     {"title": "this has a long name", "category": "pwn", "points": 90, "flag": "a5",
      "text": "abcd"},
 ])
-
-db['users'].insert_many([
-    {
-        "username": "user1", "email": "user1@example.org",
-        "lastSolveTime": 0, "solves": []
-    }, {
-        "username": "user2", "email": "user2@example.org",
-        "lastSolveTime": 0, "solves": []
-    }
-])
