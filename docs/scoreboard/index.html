@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <link rel="stylesheet" href="/single.css">
 <style>
-    #navbar>#tab_scoreboard { color: white; }
+    #navbar>span>#tab_scoreboard { color: white; }
 </style>
 
 </head>
@@ -16,18 +16,21 @@
 <body>
     
 <header>
-    <div class="capWidth">
-        <div id="navbar">
+    <div id="navbar" class="capWidth">
+        <span>
             <span id="logo">hackable.ca</span>
             <a id="tab_" href="/">home</a>
+        </span>
+        <span>
             <a id="tab_challenges" href="/challenges/">challenges</a>
             <a id="tab_scoreboard" href="/scoreboard/">scoreboard</a>
+        </span>
+        <span>
             <a style="display:none;" id="tab_profile" href="/profile/">profile</a>
             <a style="display:none;" id="tab_logout" href="/logout/">logout</a>
             <a style="display:none;" id="tab_register" href="/register/">register</a>
             <a style="display:none;" id="tab_login" href="/login/">login</a>
-        </div>
-        <div id="toggleNav">|||</div>
+        </span>
     </div>
 </header>
 <script>

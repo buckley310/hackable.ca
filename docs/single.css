@@ -27,27 +27,19 @@ header {
     background-color: #343a40;
 }
 
-header a {
-    text-decoration: none;
-}
-
-#navbar {
+#navbar>span {
     display: inline-flex;
-    height: 50px;
-    transition: height .2s ease-out;
-    overflow: hidden;
+    flex-direction: row;
 }
 
-#logo {
+#navbar>span>#logo {
     color: white;
     font-weight: bold;
 }
 
-#navbar>* {
+#navbar>span>* {
     margin: 0 20px;
-}
-
-#navbar>a {
+    text-decoration: none;
     color: rgba(255, 255, 255, .5);
 }
 
@@ -57,32 +49,12 @@ header a {
     padding: 0 10px;
 }
 
-#toggleNav {
-    display: none;
-    position: absolute;
-    right: 0;
-    height: 50px;
-    width: 50px;
-    background-color: grey;
-    text-align: center;
-    cursor: pointer;
-}
-
 @media only screen and (max-width: 700px) {
-    #toggleNav{
-        display: inline-block;
-    }
-    #navbar.navExpand {
-        height: 305px;
-    }
     #navbar {
-        flex-direction: column;
-        width: 100%;
-    }
-    #navbar>* {
-        border-bottom: 1px solid black;
-        margin: 0 40px;
         text-align: center;
+    }
+    #navbar>span {
+        flex-direction: column;
     }
 }
 
