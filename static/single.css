@@ -86,6 +86,12 @@ header a {
     }
 }
 
+#errorText {
+    text-align: center;
+    background-color: red;
+    color: white;
+}
+
 /* begin page-specific styles */
 
 #scoreboard {
