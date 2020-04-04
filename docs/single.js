@@ -1,7 +1,8 @@
 let userinfo;
 
 function loadingError(e) {
-    alert(e);
+    console.error(e);
+    document.getElementById('errorText').textContent = 'An error was encountered accessing the API';
 }
 
 function api(path, args = false) {
