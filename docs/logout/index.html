@@ -41,16 +41,12 @@
 <h3 id="logout_text">Logging out...</h3>
 <script>
     function contentInit() {
-        api('logout').then(function (j) {
-            if (j.ok) {
-                localStorage.removeItem('sessionToken');
-                location.assign('/');
-            } else {
-                console.log(j);
-                document.getElementById('logout_text')
-                    .textContent = "Something wen't wrong.";
-            }
-        }).catch(loadingError);
+        if (localStorage.getItem('sessionToken')) {
+            localStorage.removeItem('sessionToken');
+            setTimeout(() => location.reload(), 300);
+        } else {
+            document.getElementById('logout_text').textContent = "You have been logged out";
+        }
     }
 </script>
 </div>
