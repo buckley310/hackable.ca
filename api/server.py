@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
+import os
+import jwt
 import bcrypt
 from motor.motor_asyncio import AsyncIOMotorClient
 from itertools import groupby
 from collections import defaultdict, deque, Counter
 from time import time
-from secrets import token_hex
 from quart import Quart, jsonify, request
 from quart_cors import cors
 
 app = Quart(__name__)
 cors(app)
 rateLimit = deque(maxlen=64)
+jwt_secret = os.urandom(32)
 
 
 @app.before_first_request
@@ -21,11 +23,10 @@ async def start_db():
 
 
 async def get_session_username():
-    if 'X-Sesid' in request.headers:
-        r = await db.sessions.find_one({'sesid': request.headers['X-Sesid']})
-        if r:
-            return r['username']
-    return None
+    try:
+        return jwt.decode(request.headers['X-Sesid'], jwt_secret)['username']
+    except:
+        return None
 
 
 async def get_challenge_scores():
@@ -62,19 +63,8 @@ async def login():
     if not u['password'].startswith('$2b$12$'):
         print('![TODO] Password for', u['username'], 'updated.')
 
-    t = token_hex()
-    await db.sessions.insert_one({'username': args['username'], 'sesid': t})
-    return jsonify({"sesid": t})
-
-
-@app.route("/logout")
-async def logout():
-    sesid = request.headers['X-Sesid']
-    return jsonify({
-        'ok': bool(
-            (await db.sessions.delete_one({'sesid': sesid})).deleted_count
-        )
-    })
+    token = jwt.encode({'username': args['username']}, jwt_secret)
+    return jsonify({"sesid": token.decode('utf8')})
 
 
 @app.route("/userinfo")
