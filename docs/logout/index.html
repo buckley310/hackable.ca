@@ -40,13 +40,11 @@
     
 <h3 id="logout_text">Logging out...</h3>
 <script>
-    function contentInit() {
-        if (localStorage.getItem('sessionToken')) {
-            localStorage.removeItem('sessionToken');
-            setTimeout(() => location.reload(), 300);
-        } else {
-            document.getElementById('logout_text').textContent = "You have been logged out";
-        }
+    if (localStorage.getItem('sessionToken')) {
+        localStorage.removeItem('sessionToken');
+        setTimeout(() => location.reload(), 300);
+    } else {
+        document.getElementById('logout_text').textContent = "You have been logged out";
     }
 </script>
 </div>
