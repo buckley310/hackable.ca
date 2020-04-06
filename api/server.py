@@ -32,7 +32,7 @@ async def get_user_record():
 
 
 async def get_challenge_scores():
-    return defaultdict(int, [
+    return dict([
         (str(x['_id']), x['points'])
         async for x in db.challenges.find()
     ])
@@ -76,10 +76,8 @@ async def userinfo():
         return jsonify(False)
     del u['_id']
     del u['password']
-    u['score'] = sum(map(
-        (await get_challenge_scores()).get,
-        u['solves']
-    ))
+    cscores = await get_challenge_scores()
+    u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
     return jsonify(u)
 
 
@@ -107,10 +105,10 @@ async def submitflag():
 
 @app.route("/scoreboard")
 async def scoreboard():
-    chals = await get_challenge_scores()
-    board = defaultdict(lambda: 0)
+    cscores = await get_challenge_scores()
+    board = dict()
     async for u in db.users.find():
-        board[u['username']] = sum(map(chals.get, u['solves']))
+        board[u['username']] = sum(cscores.get(x, 0) for x in u['solves'])
 
     return jsonify(sorted(board.items(), key=lambda x: 0-x[1])[:10])
 
@@ -139,13 +137,14 @@ async def challenges():
     u = await get_user_record()
 
     chals = defaultdict(list)
-    async for chal in db.challenges.find({}, {'_id': 0, 'flag': 0}):
+    async for chal in db.challenges.find({}, {'flag': 0}):
         chal['solves'] = (
             await db.users.count_documents({'solves': str(chal['_id'])})
         )
         chal['solved'] = (str(chal['_id']) in u['solves']) if u else False
         cat = chal['category']
         del chal['category']
+        del chal['_id']
         chals[cat].append(chal)
 
     return jsonify([{'title': x, 'chals': chals[x]} for x in chals.keys()])
