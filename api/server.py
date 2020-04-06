@@ -4,6 +4,7 @@ import os
 import jwt
 import bcrypt
 from motor.motor_asyncio import AsyncIOMotorClient
+from bson.objectid import ObjectId
 from itertools import groupby
 from collections import defaultdict, deque, Counter
 from time import time
@@ -22,11 +23,12 @@ async def start_db():
     db = AsyncIOMotorClient('mongodb://127.0.0.1:27017')['hca']
 
 
-async def get_session_username():
+async def get_user_record():
     try:
-        return jwt.decode(request.headers['X-Sesid'], jwt_secret)['username']
+        auth = jwt.decode(request.headers['X-Sesid'], jwt_secret)
     except:
         return None
+    return await db.users.find_one({'_id': ObjectId(auth['userid'])})
 
 
 async def get_challenge_scores():
@@ -63,40 +65,38 @@ async def login():
     if not u['password'].startswith('$2b$12$'):
         print('![TODO] Password for', u['username'], 'updated.')
 
-    token = jwt.encode({'username': args['username']}, jwt_secret)
+    token = jwt.encode({'userid': str(u['_id'])}, jwt_secret)
     return jsonify({"sesid": token.decode('utf8')})
 
 
 @app.route("/userinfo")
 async def userinfo():
-    username = await get_session_username()
-    if not username:
+    u = await get_user_record()
+    if not u:
         return jsonify(False)
-    u = await db.users.find_one({'username': username}, {'_id': 0,
-                                                         'email': 1,
-                                                         'solves': 1,
-                                                         'username': 1, })
+    del u['_id']
+    del u['password']
     u['score'] = sum(map(
         (await get_challenge_scores()).get,
         u['solves']
     ))
-    return jsonify(u) if u else jsonify(False)
+    return jsonify(u)
 
 
 @app.route("/submitflag", methods=['POST'])
 async def submitflag():
-    username = await get_session_username()
-    assert username
+    u = await get_user_record()
+    assert u
     args = await request.get_json(force=True)
     c = await db.challenges.find_one({'flag': args['flag']})
     if not c:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
 
-    if await db.users.find_one({'username': username, 'solves': c['title']}):
+    if c['title'] in u['solves']:
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
     await db.users.update_one(
-        {'username': username},
+        {'_id': u['_id']},
         {
             "$set": {"lastSolveTime": int(time())},
             "$push": {"solves": c['title']},
@@ -136,15 +136,14 @@ async def newaccount():
 
 @app.route("/challenges")
 async def challenges():
-    username = await get_session_username()
+    u = await get_user_record()
 
     chals = defaultdict(list)
     async for chal in db.challenges.find({}, {'_id': 0, 'flag': 0}):
         chal['solves'] = (
-            await db.users.count_documents({'solves': chal['title']}))
-        chal['solved'] = bool(
-            await db.users.find_one({'username': username,
-                                     'solves': chal['title'], }))
+            await db.users.count_documents({'solves': chal['title']})
+        )
+        chal['solved'] = (chal['title'] in u['solves']) if u else False
         cat = chal['category']
         del chal['category']
         chals[cat].append(chal)
