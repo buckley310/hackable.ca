@@ -3,6 +3,7 @@
 import os
 import jwt
 import bcrypt
+import bisect
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson.objectid import ObjectId
 from itertools import groupby
@@ -106,11 +107,14 @@ async def submitflag():
 @app.route("/scoreboard")
 async def scoreboard():
     cscores = await get_challenge_scores()
-    board = dict()
+    board = []
     async for u in db.users.find():
-        board[u['username']] = sum(cscores.get(x, 0) for x in u['solves'])
+        score = sum(cscores.get(x, 0) for x in u['solves'])
+        bisect.insort(board, (-score, u['lastSolveTime'], u['username']))
+        while len(board) > 10 and board[-1][0] != board[-2][0]:
+            board.pop()
 
-    return jsonify(sorted(board.items(), key=lambda x: 0-x[1])[:10])
+    return jsonify([(n, -s) for s, _, n in board])
 
 
 @app.route("/newaccount", methods=['POST'])
