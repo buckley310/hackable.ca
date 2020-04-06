@@ -87,7 +87,6 @@ header {
     width: 180px;
     text-align: center;
     cursor: pointer;
-    flex-grow: 1;
 }
 
 .challengeSection {
