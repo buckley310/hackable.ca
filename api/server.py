@@ -33,7 +33,7 @@ async def get_user_record():
 
 async def get_challenge_scores():
     return defaultdict(int, [
-        (x['title'], x['points'])
+        (str(x['_id']), x['points'])
         async for x in db.challenges.find()
     ])
 
@@ -92,14 +92,14 @@ async def submitflag():
     if not c:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
 
-    if c['title'] in u['solves']:
+    if str(c['_id']) in u['solves']:
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
     await db.users.update_one(
         {'_id': u['_id']},
         {
             "$set": {"lastSolveTime": int(time())},
-            "$push": {"solves": c['title']},
+            "$push": {"solves": str(c['_id'])},
         })
 
     return jsonify({'ok': True, 'msg': 'Nice job!'})
@@ -141,9 +141,9 @@ async def challenges():
     chals = defaultdict(list)
     async for chal in db.challenges.find({}, {'_id': 0, 'flag': 0}):
         chal['solves'] = (
-            await db.users.count_documents({'solves': chal['title']})
+            await db.users.count_documents({'solves': str(chal['_id'])})
         )
-        chal['solved'] = (chal['title'] in u['solves']) if u else False
+        chal['solved'] = (str(chal['_id']) in u['solves']) if u else False
         cat = chal['category']
         del chal['category']
         chals[cat].append(chal)
