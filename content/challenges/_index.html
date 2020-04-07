@@ -39,26 +39,27 @@ title: Challenges
      }
      function contentInit() {
           api('challenges').then(function (j) {
-               let allChallenges = document.getElementById('challenges')
-               for (let section of j) {
-                    let sectionTitle = document.createElement('div');
-                    sectionTitle.textContent = section.title;
-                    sectionTitle.style.fontSize = '1.5em';
-                    allChallenges.appendChild(sectionTitle);
+               let allChallenges = document.getElementById('challenges');
+               let sections = {};
+               for (let chal of j) {
+                    if (!sections[chal['category']]) {
+                         let sectionTitle = document.createElement('div');
+                         sectionTitle.textContent = chal['category'];
+                         sectionTitle.style.fontSize = '1.5em';
+                         allChallenges.appendChild(sectionTitle);
 
-                    let sectionDiv = document.createElement('div');
-                    sectionDiv.classList.add('challengeSection');
-                    for (let chal of section.chals) {
-                         let card = document.createElement('div');
-                         card.classList.add('challengeCard')
-                         card.style.backgroundColor = chal.solved ? "#28a745" : "#dc3545";
-                         card.innerHTML = `<br><b>${chal.title}</b>
-                                           <br>${chal.points} points<br><br>`;
-                         card.onclick = () => challengeDetails(chal);
-                         sectionDiv.appendChild(card);
+                         let sectionDiv = document.createElement('div');
+                         sectionDiv.classList.add('challengeSection');
+                         sections[chal['category']] = sectionDiv;
+                         allChallenges.appendChild(sectionDiv);
                     }
-                    allChallenges.appendChild(sectionDiv);
-
+                    let card = document.createElement('div');
+                    card.classList.add('challengeCard')
+                    card.style.backgroundColor = chal.solved ? "#28a745" : "#dc3545";
+                    card.innerHTML = `<br><b>${chal.title}</b>
+                                      <br>${chal.points} points<br><br>`;
+                    card.onclick = () => challengeDetails(chal);
+                    sections[chal['category']].appendChild(card);
                }
           }).catch(loadingError);
           if (userinfo) {

@@ -6,7 +6,7 @@ import bcrypt
 import bisect
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson.objectid import ObjectId
-from collections import defaultdict, deque, Counter
+from collections import deque, Counter
 from time import time
 from quart import Quart, jsonify, request
 from quart_cors import cors
@@ -138,19 +138,15 @@ async def newaccount():
 @app.route("/challenges")
 async def challenges():
     u = await get_user_record()
-
-    chals = defaultdict(list)
+    chals = []
     async for chal in db.challenges.find({}, {'flag': 0}):
         chal['solves'] = (
             await db.users.count_documents({'solves': str(chal['_id'])})
         )
         chal['solved'] = (str(chal['_id']) in u['solves']) if u else False
-        cat = chal['category']
-        del chal['category']
         del chal['_id']
-        chals[cat].append(chal)
-
-    return jsonify([{'title': x, 'chals': chals[x]} for x in chals.keys()])
+        chals.append(chal)
+    return jsonify(chals)
 
 
 if __name__ == '__main__':
