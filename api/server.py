@@ -6,7 +6,6 @@ import bcrypt
 import bisect
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson.objectid import ObjectId
-from itertools import groupby
 from collections import defaultdict, deque, Counter
 from time import time
 from quart import Quart, jsonify, request
