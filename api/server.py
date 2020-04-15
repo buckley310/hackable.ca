@@ -121,6 +121,10 @@ async def newaccount():
     args = await request.get_json(force=True)
     assert isinstance(args['username'], str)
     assert isinstance(args['password'], str)
+    assert len(args['password'])
+
+    if len(args['username']) > 32:
+        return jsonify({'ok': False, 'txt': 'Shorter name please'})
 
     if await db.users.find_one({'username': args['username']}):
         return jsonify({'ok': False, 'txt': 'Username already taken'})
