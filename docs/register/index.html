@@ -85,6 +85,8 @@
             .then(function (j) {
                 if (j.ok)
                     window.location.assign('/login/');
+                else
+                    document.getElementById('errorText').textContent = j.txt;
             }).catch(loadingError);
     }
 
