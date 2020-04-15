@@ -41,6 +41,8 @@ async def get_challenge_scores():
 @app.route("/login", methods=['POST'])
 async def login():
     args = await request.get_json(force=True)
+    assert isinstance(args['username'], str)
+    assert isinstance(args['password'], str)
 
     # block brute force \/
     stamp = int(time()/10)
@@ -62,9 +64,6 @@ async def login():
                           u['password'].encode('utf8')):
         return jsonify({'txt': 'Incorrect'})
 
-    if not u['password'].startswith('$2b$12$'):
-        print('![TODO] Password for', u['username'], 'updated.')
-
     token = jwt.encode({'userid': str(u['_id'])}, jwt_secret)
     return jsonify({"sesid": token.decode('utf8')})
 
@@ -81,11 +80,35 @@ async def userinfo():
     return jsonify(u)
 
 
+@app.route("/setpassword")
+async def setpassword():
+    u = await get_user_record()
+    assert u
+
+    args = await request.get_json(force=True)
+    assert isinstance(args['oldpass'], str)
+    assert isinstance(args['newpass'], str)
+
+    if not bcrypt.checkpw(args['oldpass'].encode('utf8'),
+                          u['password'].encode('utf8')):
+        return jsonify({'ok': False, 'txt': 'Incorrect old password'})
+
+    newhash = bcrypt.hashpw(args['newpass'].encode('utf8'), bcrypt.gensalt())
+    await db.users.update_one(
+        {'_id': u['_id']},
+        {"$set": {"password": newhash.decode('utf8')}}
+    )
+    return jsonify({'ok': True})
+
+
 @app.route("/submitflag", methods=['POST'])
 async def submitflag():
     u = await get_user_record()
     assert u
+
     args = await request.get_json(force=True)
+    assert isinstance(args['flag'], str)
+
     c = await db.challenges.find_one({'flag': args['flag']})
     if not c:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
