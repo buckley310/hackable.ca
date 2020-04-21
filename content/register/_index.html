@@ -19,14 +19,6 @@ title: Register
             <th class="loginInput"> <input id="password2" type="password" required> </th>
         </tr>
         <tr>
-            <th class="loginLabel">Email (optional):</th>
-            <th class="loginInput"> <input id="email" type="email"> </th>
-        </tr>
-        <tr>
-            <th class="loginLabel">Confirm Email (optional):</th>
-            <th class="loginInput"> <input id="email2" type="email"> </th>
-        </tr>
-        <tr>
             <th></th>
             <th class="loginInput"> <input type="submit" value="Register"> </th>
         </tr>
@@ -37,14 +29,9 @@ title: Register
         let uname = document.getElementById('username').value;
         let pwd1 = document.getElementById('password').value;
         let pwd2 = document.getElementById('password2').value;
-        let email1 = document.getElementById('email').value;
-        let email2 = document.getElementById('email2').value;
 
         if (pwd1 !== pwd2)
             return document.getElementById('errorText').textContent = "Passwords don't match.";
-
-        if (email1 !== "" && email1 !== email2)
-            return document.getElementById('errorText').textContent = "Emails don't match.";
 
         api('newaccount', { username: uname, password: pwd1 })
             .then(function (j) {

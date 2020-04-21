@@ -25,7 +25,9 @@ async def start_db():
 
 async def get_user_record():
     try:
-        auth = jwt.decode(request.headers['X-Sesid'], jwt_secret)
+        auth = jwt.decode(request.headers['X-Sesid'],
+                          jwt_secret,
+                          algorithms=['HS256'])
     except:
         return None
     return await db.users.find_one({'_id': ObjectId(auth['userid'])})
@@ -64,7 +66,10 @@ async def login():
                           u['password'].encode('utf8')):
         return jsonify({'txt': 'Incorrect'})
 
-    token = jwt.encode({'userid': str(u['_id'])}, jwt_secret)
+    token = jwt.encode({'userid': str(u['_id'])},
+                       jwt_secret,
+                       algorithm='HS256')
+
     return jsonify({"sesid": token.decode('utf8')})
 
 
@@ -80,7 +85,7 @@ async def userinfo():
     return jsonify(u)
 
 
-@app.route("/setpassword")
+@app.route("/setpassword", methods=['POST'])
 async def setpassword():
     u = await get_user_record()
     assert u
