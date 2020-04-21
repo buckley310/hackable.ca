@@ -42,7 +42,7 @@ async def get_challenge_scores():
 
 @app.route("/login", methods=['POST'])
 async def login():
-    args = await request.get_json(force=True)
+    args = await request.get_json()
     assert isinstance(args['username'], str)
     assert isinstance(args['password'], str)
 
@@ -90,7 +90,7 @@ async def setpassword():
     u = await get_user_record()
     assert u
 
-    args = await request.get_json(force=True)
+    args = await request.get_json()
     assert isinstance(args['oldpass'], str)
     assert isinstance(args['newpass'], str)
 
@@ -111,7 +111,7 @@ async def setemail():
     u = await get_user_record()
     assert u
 
-    args = await request.get_json(force=True)
+    args = await request.get_json()
     assert isinstance(args['password'], str)
     assert isinstance(args['email'], str)
 
@@ -131,7 +131,7 @@ async def submitflag():
     u = await get_user_record()
     assert u
 
-    args = await request.get_json(force=True)
+    args = await request.get_json()
     assert isinstance(args['flag'], str)
 
     c = await db.challenges.find_one({'flag': args['flag']})
@@ -166,7 +166,7 @@ async def scoreboard():
 
 @app.route("/newaccount", methods=['POST'])
 async def newaccount():
-    args = await request.get_json(force=True)
+    args = await request.get_json()
     assert isinstance(args['username'], str)
     assert isinstance(args['password'], str)
     assert len(args['password'])
