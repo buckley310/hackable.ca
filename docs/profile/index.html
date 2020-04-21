@@ -43,10 +43,27 @@ email: <span id="email"></span><br>
 username: <span id="username"></span><br>
 score: <span id="score"></span><br>
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#resetPassword">
-    Reset Password
-</button>
-<br><br>
+<form id="changePassForm" action="javascript:void(0);" style="background-color: #f0f0f0;">
+    <h3>Change Password:</h3>
+    <table>
+        <tr>
+            <th class="loginLabel">Current Password:</th>
+            <th class="loginInput"> <input id="passwordOld" type="password" required> </th>
+        </tr>
+        <tr>
+            <th class="loginLabel">New Password:</th>
+            <th class="loginInput"> <input id="password" type="password" required> </th>
+        </tr>
+        <tr>
+            <th class="loginLabel">Confirm New Password:</th>
+            <th class="loginInput"> <input id="password2" type="password" required> </th>
+        </tr>
+        <tr>
+            <th></th>
+            <th class="loginInput"> <input type="submit" value="Register"> </th>
+        </tr>
+    </table>
+</form>
 
 <script>
     function contentInit() {
@@ -56,6 +73,25 @@ score: <span id="score"></span><br>
         document.getElementById('email').textContent = userinfo.email;
         document.getElementById('username').textContent = userinfo.username;
         document.getElementById('score').textContent = userinfo.score;
+
+        function changePass() {
+            let pwdold = document.getElementById('passwordOld').value;
+            let pwd1 = document.getElementById('password').value;
+            let pwd2 = document.getElementById('password2').value;
+
+            if (pwd1 !== pwd2)
+                return document.getElementById('errorText').textContent = "Passwords don't match.";
+
+            api('setpassword', { oldpass: pwdold, newpass: pwd1 })
+                .then(function (j) {
+                    if (j.ok)
+                        alert('Password has been changed.');
+                    else
+                        document.getElementById('errorText').textContent = j.txt;
+                }).catch(loadingError);
+        }
+
+        document.getElementById('changePassForm').addEventListener('submit', changePass);
     }
 </script>
 </div>
