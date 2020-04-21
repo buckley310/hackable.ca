@@ -106,6 +106,26 @@ async def setpassword():
     return jsonify({'ok': True})
 
 
+@app.route("/setemail", methods=['POST'])
+async def setemail():
+    u = await get_user_record()
+    assert u
+
+    args = await request.get_json(force=True)
+    assert isinstance(args['password'], str)
+    assert isinstance(args['email'], str)
+
+    if not bcrypt.checkpw(args['password'].encode('utf8'),
+                          u['password'].encode('utf8')):
+        return jsonify({'ok': False, 'txt': 'Incorrect password'})
+
+    await db.users.update_one(
+        {'_id': u['_id']},
+        {"$set": {"email": args['email']}}
+    )
+    return jsonify({'ok': True})
+
+
 @app.route("/submitflag", methods=['POST'])
 async def submitflag():
     u = await get_user_record()
