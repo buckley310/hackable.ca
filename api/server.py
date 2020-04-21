@@ -10,17 +10,45 @@ from collections import deque, Counter
 from time import time
 from quart import Quart, jsonify, request
 from quart_cors import cors
+from threading import Lock
 
 app = Quart(__name__)
 cors(app)
 rateLimit = deque(maxlen=64)
 jwt_secret = os.urandom(32)
+statsLock = Lock()
 
 
 @app.before_first_request
 async def start_db():
     global db
     db = AsyncIOMotorClient('mongodb://127.0.0.1:27017')['hca']
+    await calcStats()
+
+
+async def calcStats():
+    global solveCounts
+    global scoreboard
+
+    print("RECALCULATING STATS")
+
+    with statsLock:
+        solveCounts = dict([
+            (
+                str(chal['_id']),
+                await db.users.count_documents({'solves': str(chal['_id'])})
+            )
+            async for chal in db.challenges.find()
+        ])
+
+        cscores = await get_challenge_scores()
+        board = []
+        async for u in db.users.find():
+            score = sum(cscores.get(x, 0) for x in u['solves'])
+            bisect.insort(board, (-score, u['lastSolveTime'], u['username']))
+            while len(board) > 10 and board[-1][0] != board[-2][0]:
+                board.pop()
+        scoreboard = [(n, -s) for s, _, n in board]
 
 
 async def get_user_record():
@@ -148,20 +176,13 @@ async def submitflag():
             "$push": {"solves": str(c['_id'])},
         })
 
+    await calcStats()
     return jsonify({'ok': True, 'msg': 'Nice job!'})
 
 
 @app.route("/scoreboard")
-async def scoreboard():
-    cscores = await get_challenge_scores()
-    board = []
-    async for u in db.users.find():
-        score = sum(cscores.get(x, 0) for x in u['solves'])
-        bisect.insort(board, (-score, u['lastSolveTime'], u['username']))
-        while len(board) > 10 and board[-1][0] != board[-2][0]:
-            board.pop()
-
-    return jsonify([(n, -s) for s, _, n in board])
+async def getScoreboard():
+    return jsonify(scoreboard)
 
 
 @app.route("/newaccount", methods=['POST'])
@@ -192,9 +213,7 @@ async def challenges():
     u = await get_user_record()
     chals = []
     async for chal in db.challenges.find({}, {'flag': 0}):
-        chal['solves'] = (
-            await db.users.count_documents({'solves': str(chal['_id'])})
-        )
+        chal['solves'] = solveCounts.get(str(chal['_id']), 0)
         chal['solved'] = (str(chal['_id']) in u['solves']) if u else False
         del chal['_id']
         chals.append(chal)
