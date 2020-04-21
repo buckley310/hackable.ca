@@ -60,7 +60,29 @@ score: <span id="score"></span><br>
         </tr>
         <tr>
             <th></th>
-            <th class="loginInput"> <input type="submit" value="Register"> </th>
+            <th class="loginInput"> <input type="submit" value="Change"> </th>
+        </tr>
+    </table>
+</form>
+
+<form id="changeEmailForm" action="javascript:void(0);" style="background-color: #f0f0f0;">
+    <h3>Change Email:</h3>
+    <table>
+        <tr>
+            <th class="loginLabel">Current Password:</th>
+            <th class="loginInput"> <input id="epassword" type="password" required> </th>
+        </tr>
+        <tr>
+            <th class="loginLabel">New Email:</th>
+            <th class="loginInput"> <input id="email1" type="email" required> </th>
+        </tr>
+        <tr>
+            <th class="loginLabel">Confirm New Email:</th>
+            <th class="loginInput"> <input id="email2" type="email" required> </th>
+        </tr>
+        <tr>
+            <th></th>
+            <th class="loginInput"> <input type="submit" value="Change"> </th>
         </tr>
     </table>
 </form>
@@ -91,7 +113,27 @@ score: <span id="score"></span><br>
                 }).catch(loadingError);
         }
 
+        function changeEmail() {
+            let pwd = document.getElementById('epassword').value;
+            let email1 = document.getElementById('email1').value;
+            let email2 = document.getElementById('email2').value;
+
+            if (email1 !== email2)
+                return document.getElementById('errorText').textContent = "Emails don't match.";
+
+            api('setemail', { password: pwd, email: email1 })
+                .then(function (j) {
+                    if (j.ok) {
+                        alert('Email has been changed.');
+                        window.location.reload();
+                    } else {
+                        document.getElementById('errorText').textContent = j.txt;
+                    }
+                }).catch(loadingError);
+        }
+
         document.getElementById('changePassForm').addEventListener('submit', changePass);
+        document.getElementById('changeEmailForm').addEventListener('submit', changeEmail);
     }
 </script>
 </div>
