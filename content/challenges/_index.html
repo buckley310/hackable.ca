@@ -12,7 +12,9 @@ title: Challenges
 <div id="challenges"></div>
 <script>
      function submitFlag() {
-          api('submitflag', { flag: document.getElementById('flag').value })
+          let flag = document.getElementById('flag').value;
+          if (!flag) return;
+          api('submitflag', { flag: flag })
                .then(function (j) {
                     alert(j.msg);
                     if (j.ok)

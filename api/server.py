@@ -26,6 +26,13 @@ async def start_db():
     await calcStats()
 
 
+def checkStr(*argv):
+    for s in argv:
+        assert isinstance(s, str)
+        assert len(s)
+        print("OK:", s)
+
+
 async def calcStats():
     global solveCounts
     global scoreboard
@@ -71,8 +78,7 @@ async def get_challenge_scores():
 @app.route("/login", methods=['POST'])
 async def login():
     args = await request.get_json()
-    assert isinstance(args['username'], str)
-    assert isinstance(args['password'], str)
+    checkStr(args['username'], args['password'])
 
     # block brute force \/
     stamp = int(time()/10)
@@ -119,8 +125,7 @@ async def setpassword():
     assert u
 
     args = await request.get_json()
-    assert isinstance(args['oldpass'], str)
-    assert isinstance(args['newpass'], str)
+    checkStr(args['oldpass'], args['newpass'])
 
     if not bcrypt.checkpw(args['oldpass'].encode('utf8'),
                           u['password'].encode('utf8')):
@@ -140,8 +145,7 @@ async def setemail():
     assert u
 
     args = await request.get_json()
-    assert isinstance(args['password'], str)
-    assert isinstance(args['email'], str)
+    checkStr(args['password'], args['email'])
 
     if not bcrypt.checkpw(args['password'].encode('utf8'),
                           u['password'].encode('utf8')):
@@ -160,7 +164,7 @@ async def submitflag():
     assert u
 
     args = await request.get_json()
-    assert isinstance(args['flag'], str)
+    checkStr(args['flag'])
 
     c = await db.challenges.find_one({'flag': args['flag']})
     if not c:
@@ -188,9 +192,7 @@ async def getScoreboard():
 @app.route("/newaccount", methods=['POST'])
 async def newaccount():
     args = await request.get_json()
-    assert isinstance(args['username'], str)
-    assert isinstance(args['password'], str)
-    assert len(args['password'])
+    checkStr(args['username'], args['password'])
 
     if len(args['username']) > 32:
         return jsonify({'ok': False, 'txt': 'Shorter name please'})
