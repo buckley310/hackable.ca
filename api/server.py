@@ -30,7 +30,6 @@ def checkStr(*argv):
     for s in argv:
         assert isinstance(s, str)
         assert len(s)
-        print("OK:", s)
 
 
 async def calcStats():
