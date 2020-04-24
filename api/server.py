@@ -111,7 +111,7 @@ async def userinfo():
     u = await get_user_record()
     if not u:
         return jsonify(False)
-    del u['_id']
+    u['_id'] = str(u['_id'])
     del u['password']
     cscores = await get_challenge_scores()
     u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
