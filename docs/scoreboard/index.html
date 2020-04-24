@@ -57,14 +57,15 @@
             let stripes = true;
             for (let i in j) {
                 let tr = document.createElement('tr');
+                tr.addEventListener('click', () => location.assign('/profile/#' + j[i]['_id']));
 
                 let place = document.createElement('td');
                 let name = document.createElement('td');
                 let points = document.createElement('td');
 
                 place.textContent = i;
-                name.textContent = j[i][0];
-                points.textContent = j[i][1];
+                name.textContent = j[i]['username'];
+                points.textContent = j[i]['score'];
 
                 tr.appendChild(place);
                 tr.appendChild(name);

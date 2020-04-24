@@ -47,56 +47,20 @@
 <div id="challenges"></div>
 <script>
      function submitFlag() {
-          api('submitflag', { flag: document.getElementById('flag').value })
+          let flag = document.getElementById('flag').value;
+          if (!flag) return;
+          api('submitflag', { flag: flag })
                .then(function (j) {
                     alert(j.msg);
                     if (j.ok)
                          location.reload();
                }).catch(loadingError);
      }
-     function challengeDetails(chal) {
-          let mod = document.createElement('div');
-          mod.classList.add('modalBG');
-          mod.addEventListener('click', function (e) {
-               if (e.target === this || e.target.classList.contains('modalClose'))
-                    document.body.removeChild(this);
-          });
-          mod.innerHTML = `<div class="modalBox">
-                              <div class="modalClose">&#10060;</div>
-                              <div style="margin:10px">
-                                   <h3>${chal.title}</h3>
-                                   ${chal.text}<br><br>
-                                   <b>Points</b>: ${chal.points}<br>
-                                   <b>Solves</b>: ${chal.solves}<br>
-                              </div>
-                           </div>`;
-          document.body.appendChild(mod);
-     }
      function contentInit() {
-          api('challenges').then(function (j) {
-               let allChallenges = document.getElementById('challenges');
-               let sections = {};
-               for (let chal of j) {
-                    if (!sections[chal['category']]) {
-                         let sectionTitle = document.createElement('div');
-                         sectionTitle.textContent = chal['category'];
-                         sectionTitle.style.fontSize = '1.5em';
-                         allChallenges.appendChild(sectionTitle);
-
-                         let sectionDiv = document.createElement('div');
-                         sectionDiv.classList.add('challengeSection');
-                         sections[chal['category']] = sectionDiv;
-                         allChallenges.appendChild(sectionDiv);
-                    }
-                    let card = document.createElement('div');
-                    card.classList.add('challengeCard')
-                    card.style.backgroundColor = chal.solved ? "#28a745" : "#dc3545";
-                    card.innerHTML = `<br><b>${chal.title}</b>
-                                      <br>${chal.points} points<br><br>`;
-                    card.onclick = () => challengeDetails(chal);
-                    sections[chal['category']].appendChild(card);
-               }
-          }).catch(loadingError);
+          insertChallengeCards(
+               document.getElementById('challenges'),
+               userinfo ? userinfo['_id'] : ''
+          );
           if (userinfo) {
                document.getElementById('loginForm').addEventListener('submit', submitFlag);
                document.getElementById('loginForm').style.display = '';
