@@ -4,9 +4,11 @@ title: Profile
 ---
 
 <h1> profile </h1>
-email: <span id="email"></span><br>
+<span id="emailLine">email: <span id="email"></span><br></span>
 username: <span id="username"></span><br>
 score: <span id="score"></span><br>
+
+<div id="challenges"></div>
 
 <form id="changePassForm" action="javascript:void(0);" style="background-color: #f0f0f0;">
     <h3>Change Password:</h3>
@@ -54,9 +56,27 @@ score: <span id="score"></span><br>
 
 <script>
     function contentInit() {
+        let hash = location.hash.replace('#', '');
+        if (hash) {
+            document.getElementById('emailLine').outerHTML = '';
+            document.getElementById('changePassForm').outerHTML = '';
+            document.getElementById('changeEmailForm').outerHTML = '';
+            api('userinfo?uid=' + hash).then(function (j) {
+                if (!j.ok) {
+                    document.getElementById('errorText').textContent = j.txt;
+                    return;
+                }
+                document.getElementById('username').textContent = j.data.username;
+                document.getElementById('score').textContent = j.data.score;
+                insertChallengeCards(document.getElementById('challenges'), hash);
+            });
+            return;
+        }
+
         if (!userinfo)
             return window.location.assign('/');
 
+        insertChallengeCards(document.getElementById('challenges'), userinfo['_id']);
         document.getElementById('email').textContent = userinfo.email;
         document.getElementById('username').textContent = userinfo.username;
         document.getElementById('score').textContent = userinfo.score;

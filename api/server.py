@@ -113,7 +113,30 @@ async def login():
 
 
 @app.route("/userinfo")
-async def userinfo():
+async def OtherUserInfo():
+    checkStr(request.args['uid'])
+    try:
+        uid = ObjectId(request.args['uid'])
+    except:
+        return jsonify({'ok': False, 'txt': 'Invalid userId'})
+
+    u = await db.users.find_one(
+        {'_id': uid},
+        {'password': 0, 'email': 0}
+    )
+    if not u:
+        return jsonify({'ok': False, 'txt': 'User not found'})
+
+    u['_id'] = str(u['_id'])
+    cscores = await get_challenge_scores()
+    u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
+    del u['solves']
+    assert set(u.keys()) == set(['_id', 'username', 'lastSolveTime', 'score'])
+    return jsonify({'ok': True, 'data': u})
+
+
+@app.route("/myuserinfo")
+async def MyUserInfo():
     u = await get_user_record()
     if not u:
         return jsonify(False)
@@ -121,6 +144,11 @@ async def userinfo():
     del u['password']
     cscores = await get_challenge_scores()
     u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
+    del u['solves']
+    assert set(u.keys()) in [
+        set(['_id', 'username', 'lastSolveTime', 'score']),
+        set(['_id', 'username', 'lastSolveTime', 'score', 'email'])
+    ]
     return jsonify(u)
 
 

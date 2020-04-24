@@ -25,7 +25,7 @@ title: Challenges
           insertChallengeCards(
                document.getElementById('challenges'),
                userinfo ? userinfo['_id'] : ''
-          )
+          );
           if (userinfo) {
                document.getElementById('loginForm').addEventListener('submit', submitFlag);
                document.getElementById('loginForm').style.display = '';

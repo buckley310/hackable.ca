@@ -22,6 +22,7 @@ title: Scoreboard
             let stripes = true;
             for (let i in j) {
                 let tr = document.createElement('tr');
+                tr.addEventListener('click', () => location.assign('/profile/#' + j[i]['_id']));
 
                 let place = document.createElement('td');
                 let name = document.createElement('td');
