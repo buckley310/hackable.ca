@@ -28,8 +28,8 @@ title: Scoreboard
                 let points = document.createElement('td');
 
                 place.textContent = i;
-                name.textContent = j[i][0];
-                points.textContent = j[i][1];
+                name.textContent = j[i]['username'];
+                points.textContent = j[i]['score'];
 
                 tr.appendChild(place);
                 tr.appendChild(name);

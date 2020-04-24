@@ -51,10 +51,16 @@ async def calcStats():
         board = []
         async for u in db.users.find():
             score = sum(cscores.get(x, 0) for x in u['solves'])
-            bisect.insort(board, (-score, u['lastSolveTime'], u['username']))
+            bisect.insort(board, (-score,
+                                  u['lastSolveTime'],
+                                  u['username'],
+                                  str(u['_id'])))
             while len(board) > 10 and board[-1][0] != board[-2][0]:
                 board.pop()
-        scoreboard = [(n, -s) for s, _, n in board]
+        scoreboard = [
+            {'username': n, 'score': -s, '_id': i}
+            for s, _, n, i in board
+        ]
 
 
 async def get_user_record():
