@@ -28,7 +28,7 @@ function unhideElements(elems) {
         document.getElementById(c).style.display = '';
 }
 
-function insertChallengeCards(targetElem, userId) {
+function insertChallengeCards(targetElem, userData) {
     let challengeDetails = function (challenge) {
         let mod = document.createElement('div');
         mod.classList.add('modalBG');
@@ -47,7 +47,7 @@ function insertChallengeCards(targetElem, userId) {
                          </div>`;
         document.body.appendChild(mod);
     };
-    api('challenges?uid=' + userId).then(function (j) {
+    api('challenges').then(function (j) {
         let sections = {};
         for (let chal of j) {
             if (!sections[chal['category']]) {
@@ -63,7 +63,8 @@ function insertChallengeCards(targetElem, userId) {
             }
             let card = document.createElement('div');
             card.classList.add('challengeCard')
-            card.style.backgroundColor = chal.solved ? "#28a745" : "#dc3545";
+            card.style.backgroundColor =
+                userData.solves.includes(chal._id) ? "#28a745" : "#dc3545";
             card.innerHTML = `<br><b>${chal.title}</b>
                                <br>${chal.points} points<br><br>`;
             card.onclick = () => challengeDetails(chal);

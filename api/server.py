@@ -130,8 +130,9 @@ async def OtherUserInfo():
     u['_id'] = str(u['_id'])
     cscores = await get_challenge_scores()
     u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
-    del u['solves']
-    assert set(u.keys()) == set(['_id', 'username', 'lastSolveTime', 'score'])
+    assert set(u.keys()) == set(
+        ['_id', 'username', 'lastSolveTime', 'solves', 'score']
+    )
     return jsonify({'ok': True, 'data': u})
 
 
@@ -144,10 +145,9 @@ async def MyUserInfo():
     del u['password']
     cscores = await get_challenge_scores()
     u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
-    del u['solves']
     assert set(u.keys()) in [
-        set(['_id', 'username', 'lastSolveTime', 'score']),
-        set(['_id', 'username', 'lastSolveTime', 'score', 'email'])
+        set(['_id', 'username', 'lastSolveTime', 'solves', 'score']),
+        set(['_id', 'username', 'lastSolveTime', 'solves', 'score', 'email'])
     ]
     return jsonify(u)
 
@@ -245,12 +245,10 @@ async def newaccount():
 
 @app.route("/challenges")
 async def challenges():
-    u = await get_user_record()
     chals = []
     async for chal in db.challenges.find({}, {'flag': 0}):
-        chal['solves'] = solveCounts.get(str(chal['_id']), 0)
-        chal['solved'] = (str(chal['_id']) in u['solves']) if u else False
-        del chal['_id']
+        chal['_id'] = str(chal['_id'])
+        chal['solves'] = solveCounts.get(chal['_id'], 0)
         chals.append(chal)
     return jsonify(chals)
 
