@@ -10,5 +10,62 @@
 	<atom:link href="https://hackable.ca/index.xml" rel="self" type="application/rss+xml" />
     
     
+    <item>
+      <title>Challenges</title>
+      <link>https://hackable.ca/challenges/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://hackable.ca/challenges/</guid>
+      <description> Challenges!    function submitFlag() { let flag = document.getElementById(&#39;flag&#39;).value; if (!flag) return; api(&#39;submitflag&#39;, { flag: flag }) .then(function (j) { alert(j.msg); if (j.ok) location.reload(); }).catch(loadingError); } function contentInit() { insertChallengeCards( document.getElementById(&#39;challenges&#39;), userinfo ? userinfo[&#39;_id&#39;] : &#39;&#39; ); if (userinfo) { document.getElementById(&#39;loginForm&#39;).addEventListener(&#39;submit&#39;, submitFlag); document.getElementById(&#39;loginForm&#39;).style.display = &#39;&#39;; } } </description>
+    </item>
+    
+    <item>
+      <title>Login</title>
+      <link>https://hackable.ca/login/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://hackable.ca/login/</guid>
+      <description> Login!   Username:    Password:          function doLogin() { api(&#39;login&#39;, { username: document.getElementById(&#39;username&#39;).value, password: document.getElementById(&#39;password&#39;).value } ).then(function (j) { if (!j.sesid) return document.getElementById(&#39;errorText&#39;).textContent = j.txt; localStorage.setItem(&#39;sessionToken&#39;, j.sesid); window.location.assign(&#39;/&#39;); }).catch(loadingError); } function contentInit() { document.getElementById(&#39;loginForm&#39;).addEventListener(&#39;submit&#39;, doLogin); } </description>
+    </item>
+    
+    <item>
+      <title>Logout</title>
+      <link>https://hackable.ca/logout/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://hackable.ca/logout/</guid>
+      <description> Logging out...  if (localStorage.getItem(&#39;sessionToken&#39;)) { localStorage.removeItem(&#39;sessionToken&#39;); setTimeout(() = location.reload(), 300); } else { document.getElementById(&#39;logout_text&#39;).textContent = &#34;You have been logged out&#34;; } </description>
+    </item>
+    
+    <item>
+      <title>Profile</title>
+      <link>https://hackable.ca/profile/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://hackable.ca/profile/</guid>
+      <description>profile  email: 
+ username: 
+score: 
+ Change Password:   Current Password:    New Password:    Confirm New Password:         Change Email:   Current Password:    New Email:    Confirm New Email:          function contentInit() { let hash = location.hash.replace(&#39;#&#39;, &#39;&#39;); if (hash) { document.</description>
+    </item>
+    
+    <item>
+      <title>Register</title>
+      <link>https://hackable.ca/register/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://hackable.ca/register/</guid>
+      <description>Register!   Username:    Password:    Confirm Password:          function doRegister() { let uname = document.getElementById(&#39;username&#39;).value; let pwd1 = document.getElementById(&#39;password&#39;).value; let pwd2 = document.getElementById(&#39;password2&#39;).value; if (pwd1 !== pwd2) return document.getElementById(&#39;errorText&#39;).textContent = &#34;Passwords don&#39;t match.&#34;; api(&#39;newaccount&#39;, { username: uname, password: pwd1 }) .then(function (j) { if (j.ok) window.location.assign(&#39;/login/&#39;); else document.getElementById(&#39;errorText&#39;).textContent = j.txt; }).catch(loadingError); } function contentInit() { document.</description>
+    </item>
+    
+    <item>
+      <title>Scoreboard</title>
+      <link>https://hackable.ca/scoreboard/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://hackable.ca/scoreboard/</guid>
+      <description>scoreboard - top 10   placement username points      function contentInit() { api(&#39;scoreboard&#39;).then(function (j) { let stripes = true; for (let i in j) { let tr = document.createElement(&#39;tr&#39;); tr.addEventListener(&#39;click&#39;, () = location.assign(&#39;/profile/#&#39; + j[i][&#39;_id&#39;])); let place = document.createElement(&#39;td&#39;); let name = document.createElement(&#39;td&#39;); let points = document.createElement(&#39;td&#39;); place.textContent = i; name.textContent = j[i][&#39;username&#39;]; points.textContent = j[i][&#39;score&#39;]; tr.appendChild(place); tr.appendChild(name); tr.appendChild(points); if (stripes) tr.style.backgroundColor = &#34;rgba(0,0,0,.05)&#34; stripes = !</description>
+    </item>
+    
   </channel>
 </rss>
