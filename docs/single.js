@@ -77,7 +77,7 @@ window.addEventListener('load', function () {
 
     if (!localStorage.getItem('sessionToken')) {
 
-        unhideElements(['tab_login', 'tab_register']);
+        unhideElements(['tab_Login', 'tab_Register']);
         if (window['contentInit']) contentInit();
         return;
     }
@@ -86,8 +86,8 @@ window.addEventListener('load', function () {
         userinfo = x;
 
         unhideElements(userinfo.username ?
-            ['tab_profile', 'tab_logout'] :
-            ['tab_login', 'tab_register']);
+            ['tab_Profile', 'tab_Logout'] :
+            ['tab_Login', 'tab_Register']);
 
         if (window['contentInit']) contentInit();
 
